@@ -1,0 +1,29 @@
+{
+  "name": "@tigojs/dev-server",
+  "version": "0.1.0",
+  "description": "Local dev server for tigo lambda",
+  "main": "main.js",
+  "bin": {
+    "tigodevs": "main.js"
+  },
+  "author": "BackRunner",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^8.1.0",
+    "koa": "^2.13.1",
+    "koa-body": "^4.2.0",
+    "koa-compress": "^5.1.0",
+    "koa-logger": "^3.2.1",
+    "koa-tree-router": "^0.8.0",
+    "leveldown": "^6.0.1",
+    "levelup": "^5.0.1",
+    "log4js": "^6.3.0",
+    "lru-cache": "^6.0.0",
+    "mime": "^2.5.2",
+    "moment": "^2.29.1",
+    "node-fetch": "^2.6.1",
+    "rollup": "^2.56.3",
+    "uuid": "^8.3.2",
+    "vm2": "^3.9.3"
+  }
+}

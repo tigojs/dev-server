@@ -48,7 +48,7 @@ class LambdaRunner {
       const addEventListener = (name, func) => {
         eventEmitter.on(name, func);
       };
-      const allowRequire = ctx.lambda.allowedRequire || [];
+      const allowedRequire = ctx.lambda.allowedRequire || [];
       const script = fs.readFileSync(bundled, { encoding: 'utf-8' });
       const vm = new NodeVM({
         eval: false,
@@ -58,22 +58,22 @@ class LambdaRunner {
         },
         require: {
           external: {
-            modules: [...allowList, ...(allowRequire || [])],
+            modules: [...allowList, ...(allowedRequire || [])],
           },
-          builtin: app.config.lambda?.allowBuiltin ? app.config.lambda?.allowedBuiltin || [] : [],
+          builtin: ctx.lambda.allowBuiltin ? ctx.lambda.allowedBuiltin || [] : [],
         },
       });
       vm.freeze('env', ctx.lambda.env || {});
       vm.freeze(Response, 'Response');
       vm.freeze(fetch, 'fetch');
       if (this.cfsEnabled) {
-        vm.freeze(CFS(app.config.lambda?.cfs || {}, app.mock.cfs), 'CFS');
+        vm.freeze(CFS(ctx.lambda.cfs || {}, app.mock.cfs), 'CFS');
       }
       if (this.ossEnabled) {
-        vm.freeze(OSS(app.config.lambda?.oss || {}, app.mock.oss), 'OSS');
+        vm.freeze(OSS(ctx.lambda.oss || {}, app.mock.oss), 'OSS');
       }
       if (this.kvEnabled) {
-        vm.freeze(KV(app.config.lambda?.kv || {}), 'KV');
+        vm.freeze(KV(ctx.lambda.kv || {}), 'KV');
       }
       if (this.logEnabled) {
         vm.freeze(new Log(), 'Log');

@@ -58,8 +58,9 @@ class LambdaRunner {
         },
         require: {
           external: {
-            modules: [...allowList, ...allowRequire],
+            modules: [...allowList, ...(allowRequire || [])],
           },
+          builtin: app.config.lambda?.allowBuiltin ? app.config.lambda?.allowedBuiltin || [] : [],
         },
       });
       vm.freeze('env', ctx.lambda.env || {});

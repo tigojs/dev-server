@@ -87,18 +87,30 @@ class LambdaRunner {
       eventEmitter.emit('request', {
         context: createContextProxy(ctx),
         respondWith: (response) => {
-          if (!response || !response instanceof Response) {
-            reject('Response is invalid, please check your code.');
-          }
-          ctx.status = response.status || 200;
-          if (response.headers) {
+          ctx.status = response?.status ? response.status : ctx.status || 200;
+          if (response?.headers) {
             Object.keys(response.headers).forEach((key) => {
               ctx.set(key, response.headers.key);
             });
           }
-          ctx.body = response.body || '';
+          ctx.body = response?.body ? response.body : ctx.body || '';
+          // set content type when body is a object
+          if (!ctx.headers['content-type'] && response) {
+            if (typeof response.body === 'object') {
+              ctx.set('Content-Type', 'application/json');
+            } else if (response.body) {
+              ctx.set('Content-Type', 'text/plain');
+            }
+          }
+          if (response?.redirect) {
+            ctx.redirect(response.redirect);
+          }
           clearTimeout(wait);
+          eventEmitter.off('error', errorHandler);
           resolve();
+          // only the succeed request will be logged
+          performenceLog && performenceLog.end();
+          statusLog && statusLog.success();
         },
       });
     });

@@ -1,8 +1,10 @@
 class Response {
-  constructor ({ status, body, headers }) {
-    this.status = status;
-    this.body = body;
-    this.headers = headers;
+  constructor (response) {
+    const { status, body, headers, redirect } = response;
+    this.status = status || 200;
+    this.body = body || '';
+    this.headers = headers || {};
+    this.redirect = redirect || null;
   }
 }
 

@@ -9,6 +9,7 @@ const LambdaRunner = require('./lambda');
 const startRollupWatch = require('./utils/watcher');
 const errorWrapper = require('./utils/error');
 const { collectMockData } = require('./utils/mock');
+const { timeStamp } = require('console');
 
 class DevServer {
   constructor(config, rollupConfigPath) {

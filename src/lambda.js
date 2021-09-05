@@ -30,9 +30,6 @@ class LambdaRunner {
     });
     // set this
     this.app = app;
-    this.cfsEnabled = app.config.lambda?.cfs?.enable;
-    this.ossEnabled = app.config.lambda?.oss?.enable;
-    this.kvEnabled = app.config.lambda?.kv?.enable;
   }
   async middleware(ctx, next) {
     const bundled = ctx.rollup.output || './dist/bundled.js';
@@ -66,16 +63,16 @@ class LambdaRunner {
       vm.freeze('env', ctx.lambda.env || {});
       vm.freeze(Response, 'Response');
       vm.freeze(fetch, 'fetch');
-      if (this.cfsEnabled) {
+      if (ctx.lambda?.cfs?.enable) {
         vm.freeze(CFS(ctx.lambda.cfs || {}, app.mock.cfs), 'CFS');
       }
-      if (this.ossEnabled) {
+      if (ctx.lambda?.oss?.enable) {
         vm.freeze(OSS(ctx.lambda.oss || {}, app.mock.oss), 'OSS');
       }
-      if (this.kvEnabled) {
+      if (ctx.lambda?.kv?.enable) {
         vm.freeze(KV(ctx.lambda.kv || {}), 'KV');
       }
-      if (this.logEnabled) {
+      if (ctx.lambda?.log?.enable) {
         vm.freeze(new Log(), 'Log');
       }
       vm.run(script);

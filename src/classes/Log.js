@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const moment = require('moment');
+const wrapper = require('../utils/classWrapper');
 
 const LOG_DIR = path.resolve(__dirname, '../../../logs');
 
@@ -54,4 +55,4 @@ class Log {
   }
 }
 
-module.exports = Log;
+module.exports = wrapper(Log);

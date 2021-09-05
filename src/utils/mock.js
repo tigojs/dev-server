@@ -4,7 +4,7 @@ const fsp = require('fs/promises');
 const mime = require('mime');
 const { v4: uuidv4 } = require('uuid');
 
-const MOCK_BASE = path.resolve(__dirname, '../../../mock');
+const MOCK_BASE = path.resolve(process.cwd(), './tigo-dev/mock');
 const CFS_MOCK_BASE = path.resolve(MOCK_BASE, './cfs');
 const OSS_MOCK_BASE = path.resolve(MOCK_BASE, './oss');
 

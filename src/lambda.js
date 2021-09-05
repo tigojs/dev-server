@@ -1,11 +1,15 @@
 const { NodeVM } = require('vm2');
 const LRUCache = require('lru-cache');
+const path = require('path');
 const fs = require('fs');
 const EventEmitter = require('events');
 const fetch = require('node-fetch');
 const Response = require('./classes/Response');
 const { createContextProxy } = require('./utils/context');
+const logger = require('./utils/logger');
 const allowList = require('./constants/allowList');
+const KV = require('./classes/KV');
+const OSS = require('./classes/OSS');
 const CFS = require('./classes/CFS');
 const Log = require('./classes/Log');
 
@@ -41,7 +45,7 @@ class LambdaRunner {
       if (!bundled || !fs.existsSync(bundled)) {
         throw new Error('Cannot find the bundled script file.');
       }
-      const eventEmitter = new EventEmitter();
+      eventEmitter = new EventEmitter();
       const addEventListener = (name, func) => {
         eventEmitter.on(name, func);
       };
@@ -73,45 +77,58 @@ class LambdaRunner {
         vm.freeze(KV(ctx.lambda.kv || {}), 'KV');
       }
       if (ctx.lambda?.log?.enable) {
-        vm.freeze(new Log(), 'Log');
+        vm.freeze(Log(), 'Log');
       }
-      vm.run(script);
+      vm.run(script, path.resolve(process.cwd(), './tigo-dev-func.js'));
       cache.set(CACHE_KEY, { vm, eventEmitter });
     }
-    await new Promise((resolve, reject) => {
-      const wait = setTimeout(() => {
-        reject('The function execution time is above the limit.');
-      }, (ctx.lambda.maxWaitTime || 10) * 1000);
-      eventEmitter.emit('request', {
-        context: createContextProxy(ctx),
-        respondWith: (response) => {
-          ctx.status = response?.status ? response.status : ctx.status || 200;
-          if (response?.headers) {
-            Object.keys(response.headers).forEach((key) => {
-              ctx.set(key, response.headers.key);
-            });
-          }
-          ctx.body = response?.body ? response.body : ctx.body || '';
-          // set content type when body is a object
-          if (!ctx.headers['content-type'] && response) {
-            if (typeof response.body === 'object') {
-              ctx.set('Content-Type', 'application/json');
-            } else if (response.body) {
-              ctx.set('Content-Type', 'text/plain');
-            }
-          }
-          if (response?.redirect) {
-            ctx.redirect(response.redirect);
-          }
+    try {
+      await Promise.resolve(new Promise((resolve, reject) => {
+        const wait = setTimeout(() => {
+          reject('The function execution time is above the limit.');
+        }, (ctx.lambda.maxWaitTime || 10) * 1000);
+        const errorHandler = (err) => {
           clearTimeout(wait);
-          eventEmitter.off('error', errorHandler);
-          resolve();
-          // only the succeed request will be logged
-          performenceLog && performenceLog.end();
-          statusLog && statusLog.success();
-        },
-      });
-    });
+          reject(err);
+        };
+        eventEmitter.once('error', errorHandler);
+        eventEmitter.emit('request', {
+          context: ctx,
+          respondWith: (response) => {
+            ctx.status = response?.status ? response.status : ctx.status || 200;
+            if (response?.headers) {
+              Object.keys(response.headers).forEach((key) => {
+                ctx.set(key, response.headers.key);
+              });
+            }
+            ctx.body = response?.body ? response.body : ctx.body || '';
+            // set content type when body is a object
+            if (!ctx.headers['content-type'] && response) {
+              if (typeof response.body === 'object') {
+                ctx.set('Content-Type', 'application/json');
+              } else if (response.body) {
+                ctx.set('Content-Type', 'text/plain');
+              }
+            }
+            if (response?.redirect) {
+              ctx.redirect(response.redirect);
+            }
+            clearTimeout(wait);
+            eventEmitter.off('error', errorHandler);
+            resolve();
+          },
+        });
+      }));
+    } catch (err) {
+      logger.error(err);
+      if (typeof err === 'string') {
+        err = {
+          message: err,
+          stack: err,
+        };
+      }
+      throw err;
+    }
     await next();
   }
 }

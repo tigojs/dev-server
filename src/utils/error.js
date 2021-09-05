@@ -1,3 +1,5 @@
+const logger = require('./logger');
+
 const errorWrapper = (server) => {
   server.context.onerror = function (err) {
     if (!err) {
@@ -10,7 +12,7 @@ const errorWrapper = (server) => {
       stack: err.stack,
     }, null, '  ');
     // end stream
-    this.logger.error(err);
+    logger.error(err);
     this.res.end(this.body);
   };
 };

@@ -1,6 +1,6 @@
 {
   "name": "@tigojs/dev-server",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Local dev server for tigo lambda",
   "main": "main.js",
   "bin": {

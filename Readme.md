@@ -10,6 +10,7 @@ Here's a version matches table:
 
 | Dev Server Version | tigo FaaS Module Version |
 | ------------------ | ------------------------ |
+| v0.4.0             | v0.8.0                   |
 | v0.3.0             | v0.7.0                   |
 | v0.2.1             | v0.6.1                   |
 | v0.1.0             | up to v0.5.0             |

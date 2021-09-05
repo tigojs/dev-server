@@ -5,7 +5,6 @@ const fs = require('fs');
 const EventEmitter = require('events');
 const fetch = require('node-fetch');
 const Response = require('./classes/Response');
-const { createContextProxy } = require('./utils/context');
 const logger = require('./utils/logger');
 const allowList = require('./constants/allowList');
 const KV = require('./classes/KV');
